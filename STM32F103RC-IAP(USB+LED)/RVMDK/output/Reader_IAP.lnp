@@ -1,0 +1,21 @@
+--cpu Cortex-M3
+".\output\flash.o"
+".\output\led.o"
+".\output\main.o"
+".\output\stm32f10x_it.o"
+".\output\stm32f10x_dma.o"
+".\output\stm32f10x_exti.o"
+".\output\stm32f10x_nvic.o"
+".\output\stm32f10x_systick.o"
+".\output\stm32f10x_usart.o"
+".\output\stm32f10x_rcc.o"
+".\output\stm32f10x_gpio.o"
+".\output\stm32f10x_flash.o"
+".\output\stm32f10x_iwdg.o"
+".\output\stm32f10x_wwdg.o"
+".\output\vectors.o"
+".\output\cortexm3_macro.o"
+--strict --scatter ".\output\Reader_IAP.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Reader_IAP.map" -o .\output\Reader_IAP.axf
