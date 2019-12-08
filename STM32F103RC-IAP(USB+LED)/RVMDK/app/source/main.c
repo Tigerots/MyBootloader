@@ -180,5 +180,22 @@ int main(void)
 
 }
 
+//跳转到用户程序执行
+void iap_jump_to_user_app(u32 app_address)
+{
+    //判断用户程序第一个地址存放的栈顶地址是否合法
+    if (((*(vu32*)app_address) & 0x2FFE0000 ) == 0x20000000)
+    {
+        //用户程序第二个地址空间存放的是复位中断向量(执行并跳转到main)
+        JumpAddress = *(vu32*) (ApplicationAddress + 4);
+        //将改地址声明为函数(复位中断服务函数)
+		Jump_To_Application = (pFunction) JumpAddress;
+		//重新初始化用户程序的栈顶指针
+		__MSR_MSP(*(vu32*) ApplicationAddress);
+        //跳转到用户程序(复位中断服务函数)并执行
+		Jump_To_Application();
+    }
+}
+
 
 /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
