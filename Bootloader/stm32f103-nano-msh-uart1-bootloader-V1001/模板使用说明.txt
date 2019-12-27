@@ -1,0 +1,10 @@
+模板使用说明:
+
+1. 硬件基于STM32F103,使用HAL库, 串口1作为shell调试口
+
+2. 使用rt-thread系统nano板, 编译后大小为: 
+   Program Size: Code=10894 RO-data=954 RW-data=160 ZI-data=3304 
+
+
+
+ 
