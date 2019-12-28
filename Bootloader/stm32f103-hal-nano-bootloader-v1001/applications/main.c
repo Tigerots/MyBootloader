@@ -1,80 +1,38 @@
-/*
- * Copyright (c) 2006-2019, RT-Thread Development Team
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * Change Logs:
- * Date           Author       Notes
- * 2019-11-05     yangjie      First edition
- */
 
+/**************************** (C) COPYRIGHT 2019 ****************************
+* 设计师:   Tigerots
+* 创建时间: 2019.12.28
+* 功能描述: 基于STM32F103xx(HAL库)的bootloader, 不同芯片的map方式详见iap.h
+*       
+*****************************************************************************
+* ********************************修改历史记录********************************
+* 修改时间: 
+* 版本号:
+* 修改内容:
+*****************************************************************************/
+
+#include "my_iap.h"
+#include "rtthread.h"
 #include "stm32f1xx_hal.h"
-#include <rtthread.h>
 
-typedef unsigned char  u8;
-typedef unsigned short u16;
-typedef unsigned long  u32;
-typedef volatile unsigned long  vu32;
-
-#define LD2_GPIO_PORT  GPIOC
-#define LD2_PIN        GPIO_PIN_2
-
-static void MX_GPIO_Init(void);
-
-typedef  void (*pFunction)(void);
-pFunction Jump_To_Application;
-u32 JumpAddress;
-
-
-//跳转到用户程序执行
-void iap_jump_to_user_app(u32 app_address)
-{
-    //判断用户程序第一个地址存放的栈顶地址是否合法
-    if (((*(vu32*)app_address) & 0x2FFE0000 ) == 0x20000000)
-    {
-        //用户程序第二个地址空间存放的是复位中断向量(执行并跳转到main)
-        JumpAddress = *(vu32*) (app_address + 4);
-        //将改地址声明为函数(复位中断服务函数)
-		Jump_To_Application = (pFunction) JumpAddress;
-		//重新初始化用户程序的栈顶指针
-		__set_MSP(*(vu32*) app_address);
-        //跳转到用户程序(复位中断服务函数)并执行
-		Jump_To_Application();
-    }
-}
-
-
-#define ApplicationAddress    0x8008000
-
+/**********************************函数描述***********************************
+* 创建人:   侍任伟
+* 创建时间: 2019.12.28
+* 功能描述: IAP主函数
+            1. 初始化片内外设
+            2. 读取升级标志数据结构
+            3. 转存用户代码到执行区
+            4. 如果升级失败,可直接传输固件(待定)
+* 入口参数: 
+* 函数返回: 
+*****************************************************************************/
 int main(void)
 {
-    int i;
-    
-    MX_GPIO_Init();
-
+    //调用iap线程初始化
+    iap_thread_init();
     while (1)
     {
-        for(i=0; i<10; i++)
-        {
-            HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, GPIO_PIN_SET);
-            rt_thread_mdelay(100);
-            HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, GPIO_PIN_RESET);
-            rt_thread_mdelay(100);
-        }
-        iap_jump_to_user_app(ApplicationAddress);
+        rt_thread_mdelay(100);
     }
 }
 
-static void MX_GPIO_Init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, GPIO_PIN_RESET);
-
-    GPIO_InitStruct.Pin   = LD2_PIN;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(LD2_GPIO_PORT, &GPIO_InitStruct);
-}

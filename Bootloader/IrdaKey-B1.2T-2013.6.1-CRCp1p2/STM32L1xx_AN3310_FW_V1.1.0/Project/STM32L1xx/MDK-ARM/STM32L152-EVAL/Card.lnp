@@ -1,0 +1,5 @@
+--cpu Cortex-M3 ".\stm32l152-eval\main.o" ".\stm32l152-eval\stm32l1xx_it.o" ".\stm32l152-eval\common.o" ".\stm32l152-eval\spiflash.o" ".\stm32l152-eval\myapp.o" ".\stm32l152-eval\myfile.o" ".\stm32l152-eval\crc.o" ".\stm32l152-eval\aes.o" ".\stm32l152-eval\rsa.o" ".\stm32l152-eval\flash_if.o" ".\stm32l152-eval\misc.o" ".\stm32l152-eval\stm32l1xx_exti.o" ".\stm32l152-eval\stm32l1xx_flash.o" ".\stm32l152-eval\stm32l1xx_gpio.o" ".\stm32l152-eval\stm32l1xx_rcc.o" ".\stm32l152-eval\stm32l1xx_syscfg.o" ".\stm32l152-eval\stm32l1xx_usart.o" ".\stm32l152-eval\stm32l1xx_rtc.o" ".\stm32l152-eval\stm32l1xx_pwr.o" ".\stm32l152-eval\stm32l1xx_wwdg.o" ".\stm32l152-eval\stm32l1xx_flash_ramfunc.o" ".\stm32l152-eval\stm32l1xx_tim.o" ".\stm32l152-eval\stm32l1xx_iwdg.o" ".\stm32l152-eval\system_stm32l1xx.o" ".\stm32l152-eval\stm32l152d_eval.o" ".\stm32l152-eval\startup_stm32l1xx_hd.o" 
+--library_type=microlib --strict --scatter ".\STM32L152-EVAL\Card.sct" 
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols 
+--info sizes --info totals --info unused --info veneers 
+ --list ".\STM32L152-EVAL\Card.map" -o .\STM32L152-EVAL\Card.axf

@@ -336,7 +336,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F103xB,USE_HAL_DRIVER,STM32F103xB</Define>
+              <Define>USE_HAL_DRIVER,STM32F103xE,USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
               <IncludePath>drivers;libraries/STM32F1xx_HAL_Driver/Inc;Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;libraries/CMSIS/Device/ST/STM32F1xx/Include;libraries/CMSIS/Include</IncludePath>
             </VariousControls>
@@ -387,16 +387,21 @@
               <FileType>1</FileType>
               <FilePath>applications/main.c</FilePath>
             </File>
+            <File>
+              <FileName>my_iap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\my_iap.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\my_flash.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>STM32-HAL</GroupName>
           <Files>
-            <File>
-              <FileName>startup_stm32f103xb.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\libraries\CMSIS\Device\ST\STM32F1xx\Source\Templates\arm\startup_stm32f103xb.s</FilePath>
-            </File>
             <File>
               <FileName>stm32f1xx_hal_gpio_ex.c</FileName>
               <FileType>1</FileType>
@@ -471,6 +476,11 @@
               <FileName>system_stm32f1xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>libraries/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c</FilePath>
+            </File>
+            <File>
+              <FileName>startup_stm32f103xe.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\libraries\CMSIS\Device\ST\STM32F1xx\Source\Templates\arm\startup_stm32f103xe.s</FilePath>
             </File>
           </Files>
         </Group>

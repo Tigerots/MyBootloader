@@ -1,6 +1,7 @@
 --cpu Cortex-M3
 ".\build\main.o"
-".\build\startup_stm32f103xb.o"
+".\build\my_iap.o"
+".\build\my_flash.o"
 ".\build\stm32f1xx_hal_gpio_ex.o"
 ".\build\stm32f1xx_hal_tim.o"
 ".\build\stm32f1xx_hal_tim_ex.o"
@@ -16,6 +17,7 @@
 ".\build\stm32f1xx_hal_flash_ex.o"
 ".\build\stm32f1xx_hal_exti.o"
 ".\build\system_stm32f1xx.o"
+".\build\startup_stm32f103xe.o"
 ".\build\context_rvds.o"
 ".\build\cpuport.o"
 ".\build\clock.o"

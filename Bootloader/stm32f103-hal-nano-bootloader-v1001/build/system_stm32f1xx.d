@@ -1,6 +1,6 @@
 .\build\system_stm32f1xx.o: libraries/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c
 .\build\system_stm32f1xx.o: libraries/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
-.\build\system_stm32f1xx.o: libraries/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
+.\build\system_stm32f1xx.o: libraries/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h
 .\build\system_stm32f1xx.o: libraries/CMSIS/Include/core_cm3.h
 .\build\system_stm32f1xx.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\build\system_stm32f1xx.o: libraries/CMSIS/Include/cmsis_version.h

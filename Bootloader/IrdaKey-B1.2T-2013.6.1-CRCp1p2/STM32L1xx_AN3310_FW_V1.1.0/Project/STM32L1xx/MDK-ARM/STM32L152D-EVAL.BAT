@@ -1,0 +1,31 @@
+SET PATH=d:\Keil\ARM\ARMCC\bin\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\Rational\common;C:\Program Files\Microsoft SQL Server\80\Tools\Binn\;C:\Program Files\Common Files\Adobe\AGL;C:\Program Files\Microsoft SQL Server\90\Tools\binn\;C:\Documents and Settings\Administrator\Local Settings\Application Data\Kingsoft\WPS Office\8.1.0.3526\office6;C:\Program Files\Microsoft Visual Studio\Common\Tools\WinNT;C:\Program Files\Microsoft Visual Studio\Common\MSDev98\Bin;C:\Program Files\Microsoft Visual Studio\Common\Tools;C:\Program Files\Microsoft Visual Studio\VC98\bin
+SET CPU_TYPE=STM32L152ZD
+SET CPU_VENDOR=STMicroelectronics
+SET UV2_TARGET=STM32L152D-EVAL
+SET CPU_CLOCK=0x007A1200
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\main.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_it.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\common.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\spiflash.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\myapp.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\myfile.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\crc.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\aes.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\rsa.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\flash_if.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\misc.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_exti.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_flash.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_gpio.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_rcc.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_syscfg.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_usart.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_rtc.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_pwr.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_wwdg.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l1xx_flash_ramfunc.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\system_stm32l1xx.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmCC" --Via ".\stm32l152-eval\stm32l152d_eval.__i"
+"d:\Keil\ARM\ARMCC\bin\ArmAsm" --Via ".\stm32l152-eval\startup_stm32l1xx_hd._ia"
+"d:\Keil\ARM\ARMCC\bin\ArmLink" --Via ".\STM32L152-EVAL\Card.lnp"
+d:\Keil\ARM\ARMCC\bin\fromelf.exe ".\STM32L152-EVAL\Card.axf" --i32combined --output ".\STM32L152-EVAL\Card.hex"
