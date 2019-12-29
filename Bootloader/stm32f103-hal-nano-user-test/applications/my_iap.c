@@ -253,7 +253,6 @@ void iap_main_entry(void *parameter)
                 if(MyIapRxBuff.WriteFlag == 1)
                 {
                     iap_step = 1;
-                    Led_status = 2;//快闪
                     MyIapRxBuff.WriteStep = 0;
                     MyIapRxBuff.WriteTatolCnt = 0;
                     MyIapRxBuff.WriteAddr = MyIapMap.BuffAddr;//写入首地址
@@ -261,48 +260,53 @@ void iap_main_entry(void *parameter)
                 }
                 break;
             case 1://循环接收,写数据到缓存区
-                
-                if(MyIapRxBuff.WriteStep == 1)
-                {//接收完一组数据,写入
-                    MyIapRxBuff.WriteTime = rt_tick_get();//获取当前时间
-                    MyIapRxBuff.WriteStep = 2;//正在写入
-                    my_write_to_flash(MyIapRxBuff.WriteAddr, (uint8_t *)&MyIapRxBuff.WriteBuff[0], MyIapRxBuff.WriteSize);
-                    MyIapRxBuff.WriteAddr += MyIapRxBuff.WriteSize;
-                    MyIapRxBuff.WriteTatolCnt += MyIapRxBuff.WriteSize;
-                    MyIapRxBuff.WriteStep = 0;//写完成
-                }
-                if(MyIapRxBuff.WriteFlag == 2)
-                {//固件写入完成,发送完最后一包通过协议设置,或通过超时时间设置
-                    MyIapFlag.UpdataFlag = 1;//更新升级标志
-
-                    my_erase_write_to_flash(MyIapMap.ParaAddr, (u8 *)&MyIapFlag, sizeof(MyIapFlagType));
-                    my_soft_reset();//复位
-                }
-                if((rt_tick_get()-MyIapRxBuff.WriteTime) > 10000)
+                if(MyIapRxBuff.WriteFlag == 1)
+				{
+					if(MyIapRxBuff.WriteStep == 1)
+					{//接收完一组数据,写入
+						Led_status = 2;//快闪
+						MyIapRxBuff.WriteTime = rt_tick_get();//获取当前时间
+						MyIapRxBuff.WriteStep = 2;//正在写入
+						my_write_to_flash(MyIapRxBuff.WriteAddr, (uint8_t *)&MyIapRxBuff.WriteBuff[0], MyIapRxBuff.WriteSize);
+						MyIapRxBuff.WriteAddr += MyIapRxBuff.WriteSize;
+						MyIapRxBuff.WriteTatolCnt += MyIapRxBuff.WriteSize;
+						MyIapRxBuff.WriteStep = 0;//写完成
+					}
+					if((rt_tick_get()-MyIapRxBuff.WriteTime) > 2000)
+					{//2S未收到数据,拷贝剩余字节
+						memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
+						MyIapRxBuff.WriteSize = USART_RX_CNT;
+						USART_RX_CNT = 0;
+						MyIapRxBuff.WriteStep = 2;//正在写入
+						my_write_to_flash(MyIapRxBuff.WriteAddr, (uint8_t *)&MyIapRxBuff.WriteBuff[0], MyIapRxBuff.WriteSize);
+						MyIapRxBuff.WriteAddr += MyIapRxBuff.WriteSize;
+						MyIapRxBuff.WriteTatolCnt += MyIapRxBuff.WriteSize;
+						MyIapRxBuff.WriteStep = 0;//写完成
+						Led_status = 1;//慢闪
+					}
+					if((rt_tick_get()-MyIapRxBuff.WriteTime) > 8000)
+					{
+						MyIapRxBuff.WriteFlag = 2;
+					}
+				}
+                else if(MyIapRxBuff.WriteFlag == 2)
                 {
-                    //拷贝剩余字节
-                    memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
-                    MyIapRxBuff.WriteStep = 1;
-                    MyIapRxBuff.WriteSize = USART_RX_CNT;
-                    USART_RX_CNT = 0;
-                    
-                    MyIapRxBuff.WriteStep = 2;//正在写入
-                    my_write_to_flash(MyIapRxBuff.WriteAddr, (uint8_t *)&MyIapRxBuff.WriteBuff[0], MyIapRxBuff.WriteSize);
-                    MyIapRxBuff.WriteAddr += MyIapRxBuff.WriteSize;
-                    MyIapRxBuff.WriteTatolCnt += MyIapRxBuff.WriteSize;
-                    MyIapRxBuff.WriteStep = 0;//写完成
-                    
-                    MyIapRxBuff.WriteFlag = 2;
+					iap_step = 2;
                 }
                 break;
-            case 2://置标志,重启
+            case 2://置标志
+				//固件写入完成,发送完最后一包通过协议设置,或通过超时时间设置
+				MyIapFlag.UpdataFlag = 1;//更新升级标志
+				my_erase_write_to_flash(MyIapMap.ParaAddr, (u8 *)&MyIapFlag, sizeof(MyIapFlagType));
+				iap_step = 3;
                 break;
-            case 3:
+            case 3://重启
+				my_soft_reset();//复位
                 break;
             default:
                 break;
         }
-        rt_thread_mdelay(1);
+        rt_thread_mdelay(5);
     }
 }
 

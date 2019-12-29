@@ -82,7 +82,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 		HAL_GPIO_Init(GPIOA,&GPIO_Initure);	   	//初始化PA10
 		
 		HAL_NVIC_EnableIRQ(USART1_IRQn);        //使能USART1中断通道
-		HAL_NVIC_SetPriority(USART1_IRQn,3,3);  //抢占优先级3，子优先级3	
+		HAL_NVIC_SetPriority(USART1_IRQn,3,1);  //抢占优先级3，子优先级3	
 	}
 }
 
@@ -127,7 +127,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
         USART_RX_BUF[USART_RX_CNT] = My_RxBuffer[0] ;
         USART_RX_CNT++;
-        if(USART_RX_CNT == 1024)
+        if(USART_RX_CNT >= 1024)
         {
             memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
             MyIapRxBuff.WriteStep = 1;
