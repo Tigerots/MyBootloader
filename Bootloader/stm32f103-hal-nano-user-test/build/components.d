@@ -1,0 +1,11 @@
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\src\components.c
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\include\rthw.h
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\include\rtthread.h
+.\build\components.o: .\RTE\RTOS\rtconfig.h
+.\build\components.o: .\RTE\_stm32f103-led\RTE_Components.h
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\include\rtdebug.h
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\include\rtdef.h
+.\build\components.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\include\rtservice.h
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\include\rtm.h
+.\build\components.o: C:\Keil_v5\ARM\PACK\RealThread\RT-Thread\3.1.3\include\rtthread.h

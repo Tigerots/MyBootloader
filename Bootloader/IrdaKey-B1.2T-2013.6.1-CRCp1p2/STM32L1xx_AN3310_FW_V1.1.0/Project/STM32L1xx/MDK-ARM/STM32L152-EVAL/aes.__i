@@ -1,5 +1,0 @@
--c --cpu Cortex-M3 -D__MICROLIB -g -O1 -Otime --apcs=interwork -I..\..\..\Libraries\CMSIS\Include -I..\inc -I..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32L1xx -I..\..\..\Libraries\STM32L1xx_StdPeriph_Driver\inc -I..\..\..\Utilities\STM32_EVAL -I..\..\..\Utilities\STM32_EVAL\Common -I..\..\..\Utilities\STM32_EVAL\STM32L152D_EVAL -I..\src 
--I d:\Keil\ARM\RV31\INC 
--I d:\Keil\ARM\CMSIS\Include 
--I d:\Keil\ARM\Inc\ST\STM32L1xx 
--DUSE_STDPERIPH_DRIVER -DSTM32L1XX_HD -DUSE_STM32L152D_EVAL -o ".\STM32L152-EVAL\aes.o" --omf_browse ".\STM32L152-EVAL\aes.crf" --depend ".\STM32L152-EVAL\aes.d" "..\src\AES.c"
