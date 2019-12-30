@@ -15,7 +15,7 @@
 #include "stm32f1xx_hal.h"
 #include "string.h"
 
-__MY_UART_EXT uint8_t USART_RX_BUF[2048]; 
+__MY_UART_EXT uint8_t USART_RX_BUF[1024]; 
 __MY_UART_EXT uint32_t USART_RX_CNT;//接收的字节数 
 
 

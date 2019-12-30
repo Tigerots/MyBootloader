@@ -30,6 +30,10 @@
 #define LD2_GPIO_PORT  GPIOC
 #define LD2_PIN        GPIO_PIN_2
 
+//测试按键IO配置
+#define KEY_GPIO_PORT  GPIOB
+#define KEY_PIN        GPIO_PIN_15
+
 typedef  void (*pFunction)(void);
 pFunction Jump_To_Application;
 uint32_t JumpAddress;
@@ -74,8 +78,15 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LD2_GPIO_PORT, &GPIO_InitStruct);
-    
     HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, GPIO_PIN_RESET);
+    
+     __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin   = KEY_PIN;
+    GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(KEY_GPIO_PORT, &GPIO_InitStruct);
 }
 
 /**********************************函数描述***********************************
@@ -208,6 +219,11 @@ void led_display_entry(void *parameter)
     while (1)
     {
         LedRun();
+        if( HAL_GPIO_ReadPin(KEY_GPIO_PORT, KEY_PIN)==0 )
+        {
+            MyIapRxBuff.WriteFlag = 1;//启动烧写固件过程,通过协议或指令置位,此处为测试
+            Led_status = 5;//常亮
+        }
         rt_thread_mdelay(10);
     }
 }
@@ -222,13 +238,13 @@ void led_display_entry(void *parameter)
 *****************************************************************************/
 void start_up_init(void)
 {
-    MyIapFlag.DevType = 0x12345;
-    MyIapFlag.ChipType = 0x103;
-    MyIapFlag.FileSize = 12040;
-    MyIapFlag.FileSizeMax = 0x19000;
-    MyIapFlag.FileSizeMin = 0x2000;
-    MyIapFlag.UpdataFlag = 0;
-    //my_erase_write_to_flash(MyIapMap.ParaAddr, (u8 *)&MyIapFlag, sizeof(MyIapFlagType));
+//    MyIapFlag.DevType = 0x12345;
+//    MyIapFlag.ChipType = 0x103;
+//    MyIapFlag.FileSize = 12040;
+//    MyIapFlag.FileSizeMax = 0x19000;
+//    MyIapFlag.FileSizeMin = 0x2000;
+//    MyIapFlag.UpdataFlag = 0;
+//    my_erase_write_to_flash(MyIapMap.ParaAddr, (u8 *)&MyIapFlag, sizeof(MyIapFlagType));
     my_read_from_flash(MyIapMap.ParaAddr, (u8 *)&MyIapFlag, sizeof(MyIapFlagType));
 }
 
@@ -249,19 +265,28 @@ void iap_main_entry(void *parameter)
         switch(iap_step)
         {
             case 0://启动
-                MyIapRxBuff.WriteFlag = 1;//启动烧写固件过程,通过协议或指令置位,此处为测试
                 if(MyIapRxBuff.WriteFlag == 1)
                 {
                     iap_step = 1;
                     MyIapRxBuff.WriteStep = 0;
+                    MyIapRxBuff.WriteSize = 0;
                     MyIapRxBuff.WriteTatolCnt = 0;
                     MyIapRxBuff.WriteAddr = MyIapMap.BuffAddr;//写入首地址
                     my_erase_pages(MyIapMap.BuffAddr, MyIapMap.BuffSize);//全擦掉,因为擦除费时间
+                    MyIapRxBuff.WriteTime = rt_tick_get();//获取当前时间
+                    MyIapRxBuff.WriteFlag = 2;
                 }
                 break;
             case 1://循环接收,写数据到缓存区
-                if(MyIapRxBuff.WriteFlag == 1)
+                if(MyIapRxBuff.WriteFlag == 2)
 				{
+                    if(USART_RX_CNT >= 1000)
+                    {
+                        MyIapRxBuff.WriteSize = USART_RX_CNT;
+                        USART_RX_CNT = 0;
+                        memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], MyIapRxBuff.WriteSize);
+                        MyIapRxBuff.WriteStep = 1;
+                    }
 					if(MyIapRxBuff.WriteStep == 1)
 					{//接收完一组数据,写入
 						Led_status = 2;//快闪
@@ -270,26 +295,33 @@ void iap_main_entry(void *parameter)
 						my_write_to_flash(MyIapRxBuff.WriteAddr, (uint8_t *)&MyIapRxBuff.WriteBuff[0], MyIapRxBuff.WriteSize);
 						MyIapRxBuff.WriteAddr += MyIapRxBuff.WriteSize;
 						MyIapRxBuff.WriteTatolCnt += MyIapRxBuff.WriteSize;
-						MyIapRxBuff.WriteStep = 0;//写完成
+                        MyIapRxBuff.WriteSize = 0;
+						MyIapRxBuff.WriteStep = 3;//写完成
 					}
-					if((rt_tick_get()-MyIapRxBuff.WriteTime) > 2000)
-					{//2S未收到数据,拷贝剩余字节
-						memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
-						MyIapRxBuff.WriteSize = USART_RX_CNT;
-						USART_RX_CNT = 0;
-						MyIapRxBuff.WriteStep = 2;//正在写入
-						my_write_to_flash(MyIapRxBuff.WriteAddr, (uint8_t *)&MyIapRxBuff.WriteBuff[0], MyIapRxBuff.WriteSize);
-						MyIapRxBuff.WriteAddr += MyIapRxBuff.WriteSize;
-						MyIapRxBuff.WriteTatolCnt += MyIapRxBuff.WriteSize;
-						MyIapRxBuff.WriteStep = 0;//写完成
-						Led_status = 1;//慢闪
-					}
-					if((rt_tick_get()-MyIapRxBuff.WriteTime) > 8000)
-					{
-						MyIapRxBuff.WriteFlag = 2;
-					}
+                    if(MyIapRxBuff.WriteStep == 3)
+                    {//已经接收过数据,开始计时
+                        if((rt_tick_get()-MyIapRxBuff.WriteTime) > 2000)
+                        {//2S未收到数据,拷贝剩余字节
+                            if(USART_RX_CNT > 0)
+                            {
+                                memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
+                                MyIapRxBuff.WriteSize = USART_RX_CNT;
+                                //USART_RX_CNT = 0;
+                                MyIapRxBuff.WriteStep = 2;//正在写入
+                                my_write_to_flash(MyIapRxBuff.WriteAddr, (uint8_t *)&MyIapRxBuff.WriteBuff[0], MyIapRxBuff.WriteSize);
+                                MyIapRxBuff.WriteAddr += MyIapRxBuff.WriteSize;
+                                MyIapRxBuff.WriteTatolCnt += MyIapRxBuff.WriteSize;
+                                MyIapRxBuff.WriteStep = 3;//写完成
+                                Led_status = 1;//慢闪
+                            }
+                        }
+                        if((rt_tick_get()-MyIapRxBuff.WriteTime) > 20000)
+                        {
+                            MyIapRxBuff.WriteFlag = 3;
+                        }
+                    }
 				}
-                else if(MyIapRxBuff.WriteFlag == 2)
+                else if(MyIapRxBuff.WriteFlag == 3)
                 {
 					iap_step = 2;
                 }
@@ -297,6 +329,7 @@ void iap_main_entry(void *parameter)
             case 2://置标志
 				//固件写入完成,发送完最后一包通过协议设置,或通过超时时间设置
 				MyIapFlag.UpdataFlag = 1;//更新升级标志
+                MyIapFlag.FileSize = MyIapRxBuff.WriteTatolCnt;
 				my_erase_write_to_flash(MyIapMap.ParaAddr, (u8 *)&MyIapFlag, sizeof(MyIapFlagType));
 				iap_step = 3;
                 break;
@@ -337,7 +370,7 @@ void iap_thread_init(void)
     // 创建线程: 名称, 函数, 参数, 堆栈, 优先级, 时间片
     tid = rt_thread_create("th_iap",
                             iap_main_entry, RT_NULL,
-                            512, 5, 10);
+                            2048, 5, 10);
     // 如果获得线程控制块，启动这个线程
     if (tid != RT_NULL)
         rt_thread_startup(tid);

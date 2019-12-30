@@ -133,12 +133,14 @@ __packed typedef struct
 {
     unsigned char WriteFlag;//写标志
     //0:无升级
-    //1:启动升级,正在接收数据
-    //2:升级完成,写UpdataFlag标志为1,重启
+    //1:启动升级,擦除扇区
+    //2:擦除完成,接收数据
+    //3:升级完成,写UpdataFlag标志为1,重启
     unsigned char WriteStep;//写步骤
-    //0:空闲或写完
+    //0:空闲
     //1:接收数据完成
     //2:正在写入
+    //3:写完成
     unsigned long WriteTime;//上一包写入时间
     unsigned long WriteAddr;//当前写地址
     unsigned long WriteSize;//当前包大小

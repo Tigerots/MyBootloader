@@ -95,17 +95,26 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 *****************************************************************************/
 void USART1_IRQHandler(void)                	
 { 
-    #ifdef USE_UART_Rx_Callback
+    #ifndef USE_UART_Rx_Callback
 	uint8_t Res;
     
-	if((__HAL_UART_GET_FLAG(&UART1_Handler,UART_FLAG_RXNE)!=RESET))
+	if((__HAL_UART_GET_FLAG(&UART1_Handler, UART_FLAG_RXNE)!=RESET))
 	{//直接处理
-		Res=USART1->DR; 
-		if(USART_RX_CNT < 1024)
-		{
-			USART_RX_BUF[USART_RX_CNT]=Res;
-			USART_RX_CNT++;			 									     
-		}
+		Res = USART1->DR; 
+        USART_RX_BUF[USART_RX_CNT] = Res;
+        USART_RX_CNT = (USART_RX_CNT+1)%1024;
+        
+        
+        if(MyIapRxBuff.WriteStep != 2)
+        {
+            if(USART_RX_CNT >= 1000)
+            {
+                memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
+                MyIapRxBuff.WriteSize = USART_RX_CNT;
+                USART_RX_CNT = 0;
+                MyIapRxBuff.WriteStep = 1;
+            }
+        }
 	}
     #endif
 	HAL_UART_IRQHandler(&UART1_Handler);	
@@ -125,15 +134,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance==USART1)//如果是串口1
 	{
-        USART_RX_BUF[USART_RX_CNT] = My_RxBuffer[0] ;
-        USART_RX_CNT++;
-        if(USART_RX_CNT >= 1024)
-        {
-            memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
-            MyIapRxBuff.WriteStep = 1;
-            MyIapRxBuff.WriteSize = USART_RX_CNT;
-            USART_RX_CNT = 0;
-        }
+//        USART_RX_BUF[USART_RX_CNT] = My_RxBuffer[0] ;
+//        USART_RX_CNT++;
+//        if(MyIapRxBuff.WriteStep != 2)
+//        {
+//            if(USART_RX_CNT >= 1024)
+//            {
+//                memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
+//                MyIapRxBuff.WriteStep = 1;
+//                MyIapRxBuff.WriteSize = USART_RX_CNT;
+//                USART_RX_CNT = 0;
+//            }
+//        }
 	}
 }
 	
