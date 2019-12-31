@@ -19,19 +19,9 @@
 #include "stm32f1xx_hal.h"
   
 
-//串口1中断服务程序
-//注意,读取USARTx->SR能避免莫名其妙的错误   	
-uint8_t USART_RX_BUF[20];
-uint8_t USART_RX_BUF2[20];
-
-
-
-//接收状态
-//bit15，	接收完成标志
-//bit14，	接收到0x0d
-//bit13~0，	接收到的有效字节数目
-uint16_t USART_RX_STA=0;       	//接收状态标记	 
-uint32_t USART_RX_CNT=0;			//接收的字节数 
+#define USART_RX_MAX_LEN 2048
+uint32_t USART_RX_CNT=0;//接收的字节数 
+uint8_t USART_RX_BUF[USART_RX_MAX_LEN]; //接收缓存
 
 uint8_t My_RxBuffer[1];//HAL库使用的串口接收缓冲
 UART_HandleTypeDef UART1_Handler; //UART句柄
@@ -57,7 +47,7 @@ void my_iap_uart_init(uint32_t bound)
 	//该函数会开启接收中断,(HAL库没有单独的开中断操作)
     //设置接收缓冲地址以及接收到多少数据产生中断(重要)
     //每次接收完成,必须需要手动使能中断(重要)
-	HAL_UART_Receive_IT(&UART1_Handler, (uint8_t *)My_RxBuffer, 1);
+	HAL_UART_Receive_IT(&UART1_Handler, (uint8_t *)&My_RxBuffer, 1);
 }
 
 
@@ -110,16 +100,15 @@ void USART1_IRQHandler(void)
 	if((__HAL_UART_GET_FLAG(&UART1_Handler,UART_FLAG_RXNE)!=RESET))
 	{//直接处理
 		Res=USART1->DR; 
-		if(USART_RX_CNT < 1024)
+		if(USART_RX_CNT >= 1000)
 		{
-			USART_RX_BUF[USART_RX_CNT]=Res;
-			USART_RX_CNT++;			 									     
+					 									     
 		}
 	}
     #endif
-	HAL_UART_IRQHandler(&UART1_Handler);	
+	HAL_UART_IRQHandler(&UART1_Handler);
     //每次接收完成,必须需要手动使能中断
-    HAL_UART_Receive_IT(&UART1_Handler, (uint8_t *)My_RxBuffer, 1);
+    HAL_UART_Receive_IT(&UART1_Handler, (uint8_t *)&My_RxBuffer, 1);
 } 
 
 /**********************************函数描述***********************************
@@ -130,12 +119,14 @@ void USART1_IRQHandler(void)
 * 入口参数: 
 * 函数返回: 
 *****************************************************************************/
+uint32_t rxcnt = 0;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance==USART1)//如果是串口1
 	{
-        USART_RX_BUF2[USART_RX_CNT] = My_RxBuffer[0] ;
-        USART_RX_CNT++;
+        rxcnt++;
+        USART_RX_BUF[USART_RX_CNT] = My_RxBuffer[0] ;
+        USART_RX_CNT = (USART_RX_CNT+1) % USART_RX_MAX_LEN;
 	}
 }
 	

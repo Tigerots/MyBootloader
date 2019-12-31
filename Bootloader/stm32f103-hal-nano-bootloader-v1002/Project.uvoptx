@@ -152,9 +152,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>107</LineNumber>
+          <LineNumber>242</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134222006</Address>
+          <Address>134223594</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,31 +163,26 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\applications\my_iap.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\debug\applications/my_iap.c\107</Expression>
+          <Expression>\\debug\applications/my_iap.c\242</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>MyIapFlag_buf</ItemText>
+          <ItemText>USART_RX_CNT,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>USART_RX_BUF</ItemText>
-        </Ww>
-        <Ww>
-          <count>2</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>USART_RX_BUF2</ItemText>
+          <ItemText>rxcnt,0x0A</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>0</SubType>
-          <ItemText>0x08008000</ItemText>
+          <ItemText>USART_RX_CNT</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

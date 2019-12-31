@@ -1,0 +1,21 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Project:</h2>
+E:\0. 2015年项目备份\07. 温湿度气压计\程序\第一版-侍任伟\温湿度气压计V1001t7\Board\OS-Probe\Card.uvproj
+Project File Date:  05/13/2016
+
+<h2>Output:</h2>
+Build target 'Card'
+compiling STH1x.c...
+..\BSP\STH1x.c(214): warning:  #177-D: variable "p_value" was declared but never referenced
+..\BSP\STH1x.c(216): warning:  #177-D: variable "p_checksum" was declared but never referenced
+linking...
+Program Size: Code=32726 RO-data=1034 RW-data=216 ZI-data=6912  
+FromELF: creating hex file...
+".\obj\Card.axf" - 0 Errors, 2 Warning(s).
+Load "E:\\0. 2015年项目备份\\07. 温湿度气压计\\程序\\第一版-侍任伟\\温湿度气压计V1001t7\\Board\\OS-Probe\\obj\\Card.axf" 
+Erase Done.
+Programming Done.
+Verify OK.

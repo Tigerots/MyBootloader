@@ -87,12 +87,20 @@ void MX_GPIO_Init(void)
             2. 
 * 函数返回: 
 *****************************************************************************/
+#define USE_UCOS
 void iap_jump_to_user_app(void)
 {
     u32 app_address = 0;
 
     //用户程序首地址
     app_address = MyIapMap.UserAddr;
+
+    rt_hw_interrupt_disable();//关中断(必须,否则容易出现异常死机)
+    
+    #ifdef USE_UCOS //使用ucos系统必须使用如下语句,否则任务无法跳转
+    __set_PSP(*((volatile unsigned long int *)app_address));// 重新设置进程PSP堆栈地址,UCOS用
+    __set_CONTROL(0);//UCOS必须有
+    #endif
     
     //判断用户程序第一个地址存放的栈顶地址是否合法
     if (((*(vu32*)app_address) & 0x2FFE0000 ) == 0x20000000)
@@ -228,7 +236,7 @@ void iap_main_entry(void *parameter)
     while (1)
     {
         Led_status = 1;//快闪
-        rt_thread_mdelay(5000);
+        rt_thread_mdelay(40000);
         
         //读取升级标志数据
         my_read_from_flash(MyIapMap.ParaAddr, (uint8_t *)&MyIapFlag, sizeof(MyIapFlagType));
@@ -254,7 +262,6 @@ void iap_main_entry(void *parameter)
         }
         else
         {
-            rt_hw_interrupt_disable();//关中断(必须,否则容易出现异常死机)
             iap_jump_to_user_app();//跳转运行
         }
     }
@@ -269,7 +276,6 @@ void iap_main_entry(void *parameter)
 *****************************************************************************/
 void iap_thread_init(void) 
 {
-    
     Iap_Map_Init();//初始化map
     MX_GPIO_Init();//初始化指示灯
     my_iap_uart_init(115200);//初始化串口

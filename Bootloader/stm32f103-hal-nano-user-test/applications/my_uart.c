@@ -22,6 +22,7 @@
 #include "my_flash.h"
 #include "my_uart.h"
 #include "cmsis_armcc.h"
+#include "stm32f1xx_hal_uart.h"
   
 
 uint8_t My_RxBuffer[1];//HAL库使用的串口接收缓冲
@@ -82,7 +83,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 		HAL_GPIO_Init(GPIOA,&GPIO_Initure);	   	//初始化PA10
 		
 		HAL_NVIC_EnableIRQ(USART1_IRQn);        //使能USART1中断通道
-		HAL_NVIC_SetPriority(USART1_IRQn,3,1);  //抢占优先级3，子优先级3	
+		HAL_NVIC_SetPriority(USART1_IRQn,0,1);  //抢占优先级1，子优先级1	
 	}
 }
 
@@ -93,17 +94,17 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 * 入口参数: 
 * 函数返回: 
 *****************************************************************************/
+u32 rxcnt = 0;
 void USART1_IRQHandler(void)                	
 { 
     #ifndef USE_UART_Rx_Callback
 	uint8_t Res;
-    
 	if((__HAL_UART_GET_FLAG(&UART1_Handler, UART_FLAG_RXNE)!=RESET))
 	{//直接处理
 		Res = USART1->DR; 
         USART_RX_BUF[USART_RX_CNT] = Res;
         USART_RX_CNT = (USART_RX_CNT+1)%1024;
-        
+        rxcnt++;
         
         if(MyIapRxBuff.WriteStep != 2)
         {
@@ -119,7 +120,7 @@ void USART1_IRQHandler(void)
     #endif
 	HAL_UART_IRQHandler(&UART1_Handler);	
     //每次接收完成,必须需要手动使能中断
-    HAL_UART_Receive_IT(&UART1_Handler, (uint8_t *)My_RxBuffer, 1);
+    HAL_UART_Receive_IT(&UART1_Handler, (uint8_t *)&My_RxBuffer, 1);
 } 
 
 /**********************************函数描述***********************************
@@ -134,18 +135,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance==USART1)//如果是串口1
 	{
-//        USART_RX_BUF[USART_RX_CNT] = My_RxBuffer[0] ;
-//        USART_RX_CNT++;
-//        if(MyIapRxBuff.WriteStep != 2)
-//        {
-//            if(USART_RX_CNT >= 1024)
-//            {
-//                memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
-//                MyIapRxBuff.WriteStep = 1;
-//                MyIapRxBuff.WriteSize = USART_RX_CNT;
-//                USART_RX_CNT = 0;
-//            }
-//        }
+        USART_RX_BUF[USART_RX_CNT] = My_RxBuffer[0] ;
+        USART_RX_CNT++;
+        rxcnt++; 
+        if(MyIapRxBuff.WriteStep != 2)
+        {
+            if(USART_RX_CNT >= 1000)
+            {
+                memcpy((uint8_t *)&MyIapRxBuff.WriteBuff[0], (uint8_t *)&USART_RX_BUF[0], USART_RX_CNT);
+                MyIapRxBuff.WriteStep = 1;
+                MyIapRxBuff.WriteSize = USART_RX_CNT;
+                USART_RX_CNT = 0;
+            }
+        }
 	}
 }
 	
