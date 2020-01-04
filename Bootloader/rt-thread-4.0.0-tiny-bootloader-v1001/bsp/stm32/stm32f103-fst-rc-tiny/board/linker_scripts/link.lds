@@ -5,7 +5,7 @@
 /* Program Entry, set to mark it as "used" and avoid gc */
 MEMORY
 {
-    ROM (rx) : ORIGIN = 0x08000000, LENGTH = 256k /* 256KB flash */
+    ROM (rx) : ORIGIN = 0x08000000, LENGTH =  32k /* 32K bootloader/256KB flash  */
     RAM (rw) : ORIGIN = 0x20000000, LENGTH =  48k /* 48K sram */
 }
 ENTRY(Reset_Handler)

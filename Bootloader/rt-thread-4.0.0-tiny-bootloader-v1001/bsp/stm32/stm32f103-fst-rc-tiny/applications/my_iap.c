@@ -231,7 +231,7 @@ uint32_t rxcnt = 0;
 static rt_err_t dev_iap_uart_func(rt_device_t dev, rt_size_t size)
 {
     uint8_t ch = 0;
-    
+    rt_err_t ret;
     //while(1)  
     {  
         //rt_device_write(dev_iap_uart, 0, at_cmd_at, sizeof(at_cmd_at));  
@@ -241,6 +241,7 @@ static rt_err_t dev_iap_uart_func(rt_device_t dev, rt_size_t size)
         }
         rt_thread_mdelay(1);  
     } 
+    return ret;
 }
 /**********************************函数描述***********************************
 * 创建人:   侍任伟
