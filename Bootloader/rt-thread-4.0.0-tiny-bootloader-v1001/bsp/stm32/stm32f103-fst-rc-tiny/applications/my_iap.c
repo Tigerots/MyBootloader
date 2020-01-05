@@ -99,11 +99,14 @@ void Led_status_set(u8 x)
 * 创建人:   侍任伟
 * 创建时间: 2019.12.28
 * 功能描述: 运行状态指示灯驱动, 指示状态如下
-            Led_status = 0  慢闪: 200ms亮,1800ms灭
-            Led_status = 1  普闪: 100ms亮,900ms灭
-            Led_status = 2  双闪: 100ms亮*2,100+700ms灭
-            Led_status = 3  快闪: 100ms亮,100ms灭
-            Led_status = 4  常亮: 一直亮
+                SLOW = 0,//慢闪: 100ms亮,周期2S
+                NORMAL,  //普闪: 100ms亮,周期1S
+                FAST,    //快闪: 100ms亮,周期200mS
+                DOUBLE,  //双闪: 100ms亮*2,周期1S
+                THREEBLE,//三闪: 100ms亮*3,周期2S
+                LIGHT_PER90, //亮闪: 900ms亮,周期1S
+                LIGHT_ON, //常亮: 一直亮
+                LIGHT_OFF //常亮: 一直亮
 * 入口参数: 
 * 函数返回: 
 *****************************************************************************/
@@ -112,11 +115,11 @@ void LedRun(void)
 {
 	if( MyIapLedStatus == SLOW )
 	{//慢闪
-		if(iap_tick_get()-LastRunTime >= 1800)
+		if(iap_tick_get()-LastRunTime >= 1900)
 		{
 			LastRunTime = iap_tick_get();
 		}
-		else if(iap_tick_get()-LastRunTime >= 200)
+		else if(iap_tick_get()-LastRunTime >= 100)
 		{
 			Led_status_set(1);
 		}
@@ -163,6 +166,37 @@ void LedRun(void)
 			Led_status_set(0);
 		}
 	}	
+    else if( MyIapLedStatus ==  THREEBLE )
+	{//三闪
+		if(iap_tick_get()-LastRunTime >= 2000)
+		{
+			LastRunTime = iap_tick_get();
+		}
+		else if(iap_tick_get()-LastRunTime >= 500)
+		{
+			Led_status_set(1);
+		}
+		else if(iap_tick_get()-LastRunTime >= 400)
+		{
+			Led_status_set(0);
+		}
+		else if(iap_tick_get()-LastRunTime >= 300)
+		{
+			Led_status_set(1);
+		}
+		else if(iap_tick_get()-LastRunTime >= 200)
+		{
+			Led_status_set(0);
+		}
+		else if(iap_tick_get()-LastRunTime >= 100)
+		{
+			Led_status_set(1);
+		}
+		else
+		{//亮
+			Led_status_set(0);
+		}
+	}	
 	else if( MyIapLedStatus ==  FAST )
 	{//快闪
 		if(iap_tick_get()-LastRunTime >= 200)
@@ -178,12 +212,28 @@ void LedRun(void)
 			Led_status_set(0);
 		}
 	}	
-	else if( MyIapLedStatus ==  ALLON )
+    	
+	else if( MyIapLedStatus ==  LIGHT_PER90 )
+	{//亮闪
+		if(iap_tick_get()-LastRunTime >= 900)
+		{
+			LastRunTime = iap_tick_get();
+		}
+		else if(iap_tick_get()-LastRunTime >= 100)
+		{
+			Led_status_set(0);
+		}
+		else
+		{
+			Led_status_set(1);
+		}
+	}
+	else if( MyIapLedStatus ==  LIGHT_ON )
 	{//常亮
 		Led_status_set(0);
 	}
     else
-    {
+    {//常灭
         Led_status_set(1);
     }
 }
@@ -314,7 +364,7 @@ void iap_main_entry(void *parameter)
     
     while (1)
     {
-        MyIapLedStatus = FAST;//快闪
+        MyIapLedStatus = LIGHT_PER90;//快闪
         rt_thread_mdelay(4000);
         
         //读取升级标志数据
@@ -333,7 +383,7 @@ void iap_main_entry(void *parameter)
             }
             else
             {
-                Led_status = ALLON;//常亮
+                Led_status = LIGHT_OFF;//常灭
                 MyIapFlag.UpdataFlag = 0x55;//转存失败
                 my_erase_write_to_flash(MyIapMap.ParaAddr, (uint8_t *)&MyIapFlag, sizeof(MyIapFlagType));
             }

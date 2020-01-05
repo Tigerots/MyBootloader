@@ -96,6 +96,8 @@ __IAPEXT MyIapMapType MyIapMap;
 //升级标志数据结构,存放于ParaAddr第一个扇区,占用一个扇区空间
 __packed typedef struct
 {
+    unsigned char IsInitFlag;//是否已经初始化标志
+        
     unsigned long DevType;//适用的设备类型
     unsigned long ChipType;//适用的芯片类型
     unsigned long FileSize;//升级文件大小
@@ -122,23 +124,47 @@ __packed typedef struct
     unsigned char CommType;//通信交互方式
     //    0: 广播方式,无应答
     //    1: 问答方式,一问一答
-    unsigned char CommGap;//通信包间隔,单位ms
+    unsigned int  CommGap;//通信包间隔,单位ms
     unsigned int  PackSize;//数据单包大小(4的整数倍)
     
 }MyIapFlagType;
 __IAPEXT MyIapFlagType MyIapFlag;
 
 
+//串口iap烧写缓存
+__packed typedef struct
+{
+    unsigned char WriteFlag;//写标志
+    //0:无升级
+    //1:启动升级,擦除扇区
+    //2:擦除完成,接收数据
+    //3:升级完成,写UpdataFlag标志为1,重启
+    unsigned char WriteStep;//写步骤
+    //0:空闲
+    //1:接收数据完成
+    //2:正在写入
+    //3:写完成
+    unsigned long WriteTime;//上一包写入时间
+    unsigned long WriteAddr;//当前写地址
+    unsigned long WriteSize;//当前包大小
+    unsigned long WriteTatolCnt;//已经写总字节
+    unsigned char WriteBuff[PAGE_SIZE];//写缓存
+}MyIapRxBuffType;
+__IAPEXT MyIapRxBuffType MyIapRxBuff;
 
 
-//内存地址映射表
+
+//LED指示灯状态定义
 __packed typedef enum
 {
-    SLOW = 0,//慢闪: 200ms亮,1800ms灭
-    NORMAL,  //普闪: 100ms亮,900ms灭
-    DOUBLE,  //双闪: 100ms亮*2,100+700ms灭
-    FAST,    //快闪: 100ms亮,100ms灭
-    ALLON    //常亮: 一直亮
+    SLOW = 0,//慢闪: 100ms亮,周期2S
+    NORMAL,  //普闪: 100ms亮,周期1S
+    FAST,    //快闪: 100ms亮,周期200mS
+    DOUBLE,  //双闪: 100ms亮*2,周期1S
+    THREEBLE,//三闪: 100ms亮*3,周期2S
+    LIGHT_PER90, //亮闪: 900ms亮,周期1S
+    LIGHT_ON, //常亮: 一直亮
+    LIGHT_OFF //常亮: 一直亮
 }MyIapLedStatusType;
 __IAPEXT MyIapLedStatusType MyIapLedStatus;
 

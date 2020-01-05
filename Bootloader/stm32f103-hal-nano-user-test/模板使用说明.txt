@@ -1,0 +1,10 @@
+模板使用说明:
+
+1. 硬件基于STM32F103,使用HAL库, 无shell调试口
+
+2. 使用rt-thread系统nano板, 编译后大小为: 
+   Program Size: Code=3788 RO-data=592 RW-data=124 ZI-data=1716     
+
+
+
+ 
