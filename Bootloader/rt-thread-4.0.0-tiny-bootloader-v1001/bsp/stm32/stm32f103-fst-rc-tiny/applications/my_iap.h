@@ -13,7 +13,7 @@
 #include "my_type.h"
 //LEDÖ¸Ê¾µÆÏÔÊ¾×´Ì¬
 __IAPEXT unsigned char  Led_status;
-
+#define Led_status MyIapLedStatus 
 
 #if FLASH_SIZE<256
 #define SECTOR_SIZE 1024
@@ -127,6 +127,20 @@ __packed typedef struct
     
 }MyIapFlagType;
 __IAPEXT MyIapFlagType MyIapFlag;
+
+
+
+
+//ÄÚ´æµØÖ·Ó³Éä±í
+__packed typedef enum
+{
+    SLOW = 0,//ÂýÉÁ: 200msÁÁ,1800msÃð
+    NORMAL,  //ÆÕÉÁ: 100msÁÁ,900msÃð
+    DOUBLE,  //Ë«ÉÁ: 100msÁÁ*2,100+700msÃð
+    FAST,    //¿ìÉÁ: 100msÁÁ,100msÃð
+    ALLON    //³£ÁÁ: Ò»Ö±ÁÁ
+}MyIapLedStatusType;
+__IAPEXT MyIapLedStatusType MyIapLedStatus;
 
 
 //º¯ÊýÉùÃ÷

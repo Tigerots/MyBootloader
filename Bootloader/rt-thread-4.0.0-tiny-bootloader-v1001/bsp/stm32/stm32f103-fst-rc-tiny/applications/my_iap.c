@@ -30,9 +30,8 @@
 #define LD2_GPIO_PORT  GPIOC
 #define LD2_PIN        GPIO_PIN_2
 
-typedef  void (*pFunction)(void);
-pFunction Jump_To_Application;
-uint32_t JumpAddress;
+//定义获取系统tick函数
+#define iap_tick_get    rt_tick_get
 
 
 /**********************************函数描述***********************************
@@ -42,7 +41,7 @@ uint32_t JumpAddress;
 * 入口参数: 
 * 函数返回: 
 *****************************************************************************/
-void Iap_Map_Init(void)
+void iap_map_init(void)
 {
     MyIapMap.BootAddr = c_BootAddr;//bootloader起始地址
     MyIapMap.BootSize = c_BootSize;//bootloader占用内存大小
@@ -57,13 +56,13 @@ void Iap_Map_Init(void)
 /**********************************函数描述***********************************
 * 创建人:   侍任伟
 * 创建时间: 2019.12.28
-* 功能描述: 初始化指示灯IO口
+* 功能描述: 初始化指示灯IO口, 移植时需要修改
             1. 打开对应端口时钟
             2. 初始化引脚
 * 入口参数: 需改宏定义的指示灯IO
 * 函数返回: 
 *****************************************************************************/
-void MX_GPIO_Init(void)
+void iap_gpio_init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -77,6 +76,119 @@ void MX_GPIO_Init(void)
     
     HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, GPIO_PIN_RESET);
 }
+/**********************************函数描述***********************************
+* 创建人:   侍任伟
+* 创建时间: 2019.12.28
+* 功能描述: LED亮暗控制, 移植时需要修改
+* 入口参数: 
+* 函数返回: 
+*****************************************************************************/
+void Led_status_set(u8 x)   
+{
+    if(x==0)
+    {//亮
+        HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, GPIO_PIN_RESET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, GPIO_PIN_SET);
+    }
+}
+
+/**********************************函数描述***********************************
+* 创建人:   侍任伟
+* 创建时间: 2019.12.28
+* 功能描述: 运行状态指示灯驱动, 指示状态如下
+            Led_status = 0  慢闪: 200ms亮,1800ms灭
+            Led_status = 1  普闪: 100ms亮,900ms灭
+            Led_status = 2  双闪: 100ms亮*2,100+700ms灭
+            Led_status = 3  快闪: 100ms亮,100ms灭
+            Led_status = 4  常亮: 一直亮
+* 入口参数: 
+* 函数返回: 
+*****************************************************************************/
+uint32_t LastRunTime;
+void LedRun(void)
+{
+	if( MyIapLedStatus == SLOW )
+	{//慢闪
+		if(iap_tick_get()-LastRunTime >= 1800)
+		{
+			LastRunTime = iap_tick_get();
+		}
+		else if(iap_tick_get()-LastRunTime >= 200)
+		{
+			Led_status_set(1);
+		}
+		else
+		{
+			Led_status_set(0);
+		}
+	}
+    else if( MyIapLedStatus ==  NORMAL)
+	{//普闪
+		if(iap_tick_get()-LastRunTime >= 900)
+		{
+			LastRunTime = iap_tick_get();
+		}
+		else if(iap_tick_get()-LastRunTime >= 100)
+		{
+			Led_status_set(1);
+		}
+		else
+		{
+			Led_status_set(0);
+		}
+	}
+	else if( MyIapLedStatus ==  DOUBLE )
+	{//双闪
+		if(iap_tick_get()-LastRunTime >= 1000)
+		{
+			LastRunTime = iap_tick_get();
+		}
+		else if(iap_tick_get()-LastRunTime >= 300)
+		{
+			Led_status_set(1);
+		}
+		else if(iap_tick_get()-LastRunTime >= 200)
+		{
+			Led_status_set(0);
+		}
+		else if(iap_tick_get()-LastRunTime >= 100)
+		{
+			Led_status_set(1);
+		}
+		else
+		{//亮
+			Led_status_set(0);
+		}
+	}	
+	else if( MyIapLedStatus ==  FAST )
+	{//快闪
+		if(iap_tick_get()-LastRunTime >= 200)
+		{
+			LastRunTime = iap_tick_get();
+		}
+		else if(iap_tick_get()-LastRunTime >= 100)
+		{
+			Led_status_set(1);
+		}
+		else
+		{
+			Led_status_set(0);
+		}
+	}	
+	else if( MyIapLedStatus ==  ALLON )
+	{//常亮
+		Led_status_set(0);
+	}
+    else
+    {
+        Led_status_set(1);
+    }
+}
+
+
 
 /**********************************函数描述***********************************
 * 创建人:   侍任伟
@@ -88,6 +200,11 @@ void MX_GPIO_Init(void)
 * 函数返回: 
 *****************************************************************************/
 #define USE_UCOS
+
+typedef  void (*pFunction)(void);
+pFunction Jump_To_Application;
+uint32_t JumpAddress;
+
 void iap_jump_to_user_app(void)
 {
     u32 app_address = 0;
@@ -114,81 +231,6 @@ void iap_jump_to_user_app(void)
         //跳转到用户程序(复位中断服务函数)并执行
 		Jump_To_Application();
     }
-}
-
-
-/**********************************函数描述***********************************
-* 创建人:   侍任伟
-* 创建时间: 2019.12.28
-* 功能描述: 运行状态指示灯驱动, 指示状态如下
-            Led_status = 0. 慢闪: 100ms亮,900ms灭, 常态 
-            Led_status = 1. 双闪: 100ms亮*2,700ms灭, 正在转存程序
-            Led_status = 2. 快闪: 100ms亮,100ms灭, 正在传输程序
-            Led_status = 其他. 常亮: 故障
-* 入口参数: 
-* 函数返回: 
-*****************************************************************************/
-uint32_t LastRunTime;
-#define Led_status_set(x) HAL_GPIO_WritePin(LD2_GPIO_PORT, LD2_PIN, x)
-void LedRun(void)
-{
-	if( Led_status==0 )
-	{//正常工作状态,慢闪
-		if(rt_tick_get()-LastRunTime >= 1000)
-		{
-			LastRunTime = rt_tick_get();
-		}
-		else if(rt_tick_get()-LastRunTime >= 100)
-		{
-			Led_status_set(GPIO_PIN_SET);
-		}
-		else
-		{
-			Led_status_set(GPIO_PIN_RESET);
-		}
-	}
-	else if( Led_status==1 )
-	{//双闪
-		if(rt_tick_get()-LastRunTime >= 1000)
-		{
-			LastRunTime = rt_tick_get();
-		}
-		else if(rt_tick_get()-LastRunTime >= 300)
-		{
-			Led_status_set(GPIO_PIN_SET);
-		}
-		else if(rt_tick_get()-LastRunTime >= 200)
-		{
-			Led_status_set(GPIO_PIN_RESET);
-		}
-		else if(rt_tick_get()-LastRunTime >= 100)
-		{
-			Led_status_set(GPIO_PIN_SET);
-		}
-		else
-		{//亮
-			Led_status_set(GPIO_PIN_RESET);
-		}
-	}	
-	else if( Led_status==2 )
-	{//快闪
-		if(rt_tick_get()-LastRunTime >= 200)
-		{
-			LastRunTime = rt_tick_get();
-		}
-		else if(rt_tick_get()-LastRunTime >= 100)
-		{
-			Led_status_set(GPIO_PIN_SET);
-		}
-		else
-		{
-			Led_status_set(GPIO_PIN_RESET);
-		}
-	}	
-	else
-	{//常亮
-		Led_status_set(GPIO_PIN_RESET);
-	}
 }
 
 /**********************************函数描述***********************************
@@ -272,26 +314,26 @@ void iap_main_entry(void *parameter)
     
     while (1)
     {
-        Led_status = 1;//快闪
-        rt_thread_mdelay(40000);
+        MyIapLedStatus = FAST;//快闪
+        rt_thread_mdelay(4000);
         
         //读取升级标志数据
         my_read_from_flash(MyIapMap.ParaAddr, (uint8_t *)&MyIapFlag, sizeof(MyIapFlagType));
         //判断升级标志
         if(MyIapFlag.UpdataFlag == 1)
         {//需要升级
-            Led_status = 1;//快闪
+            Led_status = FAST;//快闪
             ret = iap_re_write_user_code();//转存升级固件
             if(ret == 0)
             {
-                Led_status = 0;//慢闪
+                Led_status = SLOW;//慢闪
                 MyIapFlag.UpdataFlag = 2;//转存完成,准备启动
                 my_erase_write_to_flash(MyIapMap.ParaAddr, (uint8_t *)&MyIapFlag, sizeof(MyIapFlagType));
                 iap_jump_to_user_app();//跳转运行
             }
             else
             {
-                Led_status = 1;//常亮
+                Led_status = ALLON;//常亮
                 MyIapFlag.UpdataFlag = 0x55;//转存失败
                 my_erase_write_to_flash(MyIapMap.ParaAddr, (uint8_t *)&MyIapFlag, sizeof(MyIapFlagType));
             }
@@ -313,8 +355,8 @@ void iap_main_entry(void *parameter)
 *****************************************************************************/
 void iap_thread_init(void) 
 {
-    Iap_Map_Init();//初始化map
-    MX_GPIO_Init();//初始化指示灯
+    iap_map_init();//初始化map
+    iap_gpio_init();//初始化指示灯
     //my_iap_uart_init(115200);//初始化串口
         
     static rt_thread_t tid = RT_NULL;

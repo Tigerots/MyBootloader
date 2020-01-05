@@ -13,24 +13,17 @@
 #include <board.h>
 #include "my_iap.h"
 
-/* defined the LED3 pin: PA3 */
-#define LED3_PIN    GET_PIN(A, 3)
 
 int main(void)
 {
-    int count = 1;
-    /* set LED0 pin mode to output */
-    rt_pin_mode(LED3_PIN, PIN_MODE_OUTPUT);
-
+    //使用iap模块,只需调用该初始化函数
     iap_thread_init();
     
-    while (count++)
+    while(1)
     {
-        rt_pin_write(LED3_PIN, PIN_HIGH);
-        rt_thread_mdelay(500);
-        rt_pin_write(LED3_PIN, PIN_LOW);
+        /*
+        主函数内增加自己的功能
+        */
         rt_thread_mdelay(500);
     }
-
-    return RT_EOK;
 }
