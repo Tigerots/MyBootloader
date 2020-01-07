@@ -11,6 +11,10 @@
 #endif
 
 #include "my_type.h"
+#include "rtdef.h"
+
+
+
 //LED指示灯显示状态
 __IAPEXT unsigned char  Led_status;
 #define Led_status MyIapLedStatus 
@@ -43,8 +47,8 @@ __IAPEXT unsigned char  Led_status;
 #ifdef USE_STM32F103xD
     //Flash基地址
     #define STM_FLASH_BASE (0x08000000)
-    //片内Flash大小:256K
-    #define STM_FLASH_SIZE (0x40000)
+    //片内Flash大小:384K
+    #define STM_FLASH_SIZE (0x60000)
     //扇区大小:2K
     #define STM_PAGE_SIZE (0x800)
     //默认地址映射
@@ -60,8 +64,8 @@ __IAPEXT unsigned char  Led_status;
 #ifdef USE_STM32F103xE
     //Flash基地址
     #define STM_FLASH_BASE (0x08000000)
-    //片内Flash大小:256K
-    #define STM_FLASH_SIZE (0x40000)
+    //片内Flash大小:512K
+    #define STM_FLASH_SIZE (0x80000)
     //扇区大小:2K
     #define STM_PAGE_SIZE (0x800)
     //默认地址映射
@@ -114,8 +118,8 @@ __packed typedef struct
     unsigned char UpdataType;//升级类型
     //    0: 选择升级
     //    1: 强制升级
-    unsigned int SoftFilter;//固件版本过滤, 大于该版本的需要升级
-    unsigned int HardFilter;//适应的硬件版本, 大于该版本的需要升级
+    unsigned int SoftFilter;//固件版本过滤, 低于该版本的需要升级
+    unsigned int HardFilter;//适应的硬件版本, 等于该版本的需要升级
     
     unsigned char FileType;//文件类型
     //    0: Hex文件(具有行校验,体积较大,ascii方式传输)
@@ -125,7 +129,7 @@ __packed typedef struct
     //    0: 广播方式,无应答
     //    1: 问答方式,一问一答
     unsigned int CommGap;//通信包间隔,单位ms
-    unsigned int  PackSize;//数据单包大小(4的整数倍)
+    unsigned int PackSize;//数据单包大小(4的整数倍)
     
 }MyIapFlagType;
 __IAPEXT MyIapFlagType MyIapFlag;
@@ -142,7 +146,7 @@ __packed typedef struct
     unsigned char WriteStep;//写步骤
     //0:空闲
     //1:接收数据完成
-    //2:正在写入
+    //2:正在写入,保护缓存
     //3:写完成
     unsigned long WriteTime;//上一包写入时间
     unsigned long WriteAddr;//当前写地址
@@ -169,6 +173,46 @@ __packed typedef enum
 __IAPEXT MyIapLedStatusType MyIapLedStatus;
 
 
+
+//***********************************************************
+//通用协议结构（包头）
+__packed typedef struct
+{
+    unsigned char Head[3];//头 0x3A,0x5B,0x7C
+    unsigned char ProVer;//协议版本号
+    unsigned char DevType;//设备类型
+    unsigned char DevAddr;//设备地址
+    unsigned char AskFlag;//应答标志
+            //数据包发起方：
+            //0x00：命令需要应答
+            //0x01：命令不需要应答
+            //数据包应答方：
+            //0x02：正在应答（后续还有数据包）
+            //0x03：应答完成（成功）
+            //0x04：数据错误，请求重发或终止
+            //0x05：设备忙，无法响应
+    unsigned int DateLen;//数据体长度
+}MyProHeadBaseType;
+
+//通用协议结构（包头）
+__packed typedef struct
+{
+    unsigned char Crc[2];//校验
+    unsigned char Tail;//尾 0x7E
+}MyProTailBaseType;
+
+//开始升级协议结构（US）
+__packed typedef struct
+{
+    unsigned char Cmd[2];//
+    unsigned char Tail;//尾 0x7E
+}MyProCmdUSType;
+
+
+
+
+
+
 //函数声明
 __IAPEXT void Iap_Map_Init(void);
 __IAPEXT void iap_jump_to_user_app(void);
@@ -176,6 +220,9 @@ __IAPEXT void MX_GPIO_Init(void);
 __IAPEXT void LedRun(void);
 __IAPEXT void led_display_entry(void *parameter);
 __IAPEXT void iap_thread_init(void);
+__IAPEXT rt_err_t dev_iap_uart_func(rt_device_t dev, rt_size_t size);
+__IAPEXT void my_soft_reset(void);
+__IAPEXT void iap_uart_dev_init(void);
 
 #endif
 
