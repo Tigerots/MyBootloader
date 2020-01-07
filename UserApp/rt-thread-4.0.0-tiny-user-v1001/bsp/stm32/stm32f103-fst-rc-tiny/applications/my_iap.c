@@ -87,6 +87,45 @@ void iap_gpio_init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(KEY_GPIO_PORT, &GPIO_InitStruct);
 }
+
+/**********************************函数描述***********************************
+* 创建人:   侍任伟
+* 创建时间: 2020.1.7
+* 功能描述: iap使用的串口设备初始化
+            1. 使用env配置使用的串口，本机使用uart1
+            2. 或直接手工修改rtconfig.h中BSP_USING_UARTx选项及其他相关配置
+* 入口参数: 
+* 函数返回: 
+*****************************************************************************/
+void iap_uart_dev_init(void)
+{
+    
+    rt_err_t ret = 0;
+    
+    //查找iap串口设备
+    dev_iap_uart = rt_device_find("uart1");  
+    if(dev_iap_uart != RT_NULL)  
+    {
+        //打开iap使用的串口设备
+        ret = rt_device_open(dev_iap_uart, RT_DEVICE_FLAG_INT_RX);  
+        if(ret == RT_EOK)
+        {
+            //设置串口接收中断回调函数
+            rt_device_set_rx_indicate(dev_iap_uart, dev_iap_uart_func);
+        }
+        else
+        {
+            rt_kprintf("打开串口设备失败...\r");
+        }
+    } 
+    else
+    {
+        rt_kprintf("没有发现串口设备...\r");
+    }
+}
+
+
+
 /**********************************函数描述***********************************
 * 创建人:   侍任伟
 * 创建时间: 2019.12.28
@@ -404,32 +443,8 @@ void led_display_entry(void *parameter)
 uint8_t iap_step = 0;
 void iap_main_entry(void *parameter)
 {
-    rt_err_t ret = 0;
-    
     Led_status = NORMAL;//普闪
     start_up_init();//应用程序上电初始化
-    
-    //查找iap串口设备
-    dev_iap_uart = rt_device_find("uart1");  
-    if(dev_iap_uart != RT_NULL)  
-    {
-        //打开iap使用的串口设备
-        ret = rt_device_open(dev_iap_uart, RT_DEVICE_FLAG_INT_RX);  
-        if(ret == RT_EOK)
-        {
-            //设置串口接收中断回调函数
-            rt_device_set_rx_indicate(dev_iap_uart, dev_iap_uart_func);
-        }
-        else
-        {
-            rt_kprintf("打开串口设备失败...\r");
-        }
-    } 
-    else
-    {
-        rt_kprintf("没有发现串口设备...\r");
-    }
-    
     
     while (1)
     {
@@ -535,7 +550,7 @@ void iap_thread_init(void)
 {
     iap_map_init();//初始化map
     iap_gpio_init();//初始化指示灯
-    //my_iap_uart_init(115200);//初始化串口
+    iap_uart_dev_init();//初始化串口
         
     static rt_thread_t tid = RT_NULL;
 	

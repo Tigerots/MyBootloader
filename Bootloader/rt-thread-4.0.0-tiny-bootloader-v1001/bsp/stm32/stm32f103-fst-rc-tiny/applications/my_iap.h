@@ -27,9 +27,9 @@ __IAPEXT unsigned char  Led_status;
     //Flash基地址
     #define STM_FLASH_BASE (0x08000000)
     //片内Flash大小:256K
-    #define FLASH_SIZE (0x40000)
+    #define STM_FLASH_SIZE (0x40000)
     //扇区大小:2K
-    #define PAGE_SIZE (0x800)
+    #define STM_PAGE_SIZE (0x800)
     //默认地址映射
     #define c_BootAddr 0x08000000
     #define c_BootSize 0x8000 //32K
@@ -44,9 +44,9 @@ __IAPEXT unsigned char  Led_status;
     //Flash基地址
     #define STM_FLASH_BASE (0x08000000)
     //片内Flash大小:256K
-    #define FLASH_SIZE (0x40000)
+    #define STM_FLASH_SIZE (0x40000)
     //扇区大小:2K
-    #define PAGE_SIZE (0x800)
+    #define STM_PAGE_SIZE (0x800)
     //默认地址映射
     #define c_BootAddr 0x08000000
     #define c_BootSize 0x8000 //32K
@@ -61,9 +61,9 @@ __IAPEXT unsigned char  Led_status;
     //Flash基地址
     #define STM_FLASH_BASE (0x08000000)
     //片内Flash大小:256K
-    #define FLASH_SIZE (0x40000)
+    #define STM_FLASH_SIZE (0x40000)
     //扇区大小:2K
-    #define PAGE_SIZE (0x800)
+    #define STM_PAGE_SIZE (0x800)
     //默认地址映射
     #define c_BootAddr 0x08000000
     #define c_BootSize 0x10000 //64K
@@ -124,7 +124,7 @@ __packed typedef struct
     unsigned char CommType;//通信交互方式
     //    0: 广播方式,无应答
     //    1: 问答方式,一问一答
-    unsigned int  CommGap;//通信包间隔,单位ms
+    unsigned int CommGap;//通信包间隔,单位ms
     unsigned int  PackSize;//数据单包大小(4的整数倍)
     
 }MyIapFlagType;
@@ -148,7 +148,7 @@ __packed typedef struct
     unsigned long WriteAddr;//当前写地址
     unsigned long WriteSize;//当前包大小
     unsigned long WriteTatolCnt;//已经写总字节
-    unsigned char WriteBuff[PAGE_SIZE];//写缓存
+    unsigned char WriteBuff[STM_PAGE_SIZE];//写缓存
 }MyIapRxBuffType;
 __IAPEXT MyIapRxBuffType MyIapRxBuff;
 

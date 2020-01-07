@@ -63,15 +63,15 @@ uint16_t my_calculate_page_num(uint32_t Eaddr, uint16_t Elen)
     
     uint32_t temp = 0;
     
-    page_start_num = (Eaddr - STM_FLASH_BASE) / PAGE_SIZE;
-    temp = (Eaddr - STM_FLASH_BASE) % PAGE_SIZE;
+    page_start_num = (Eaddr - STM_FLASH_BASE) / STM_PAGE_SIZE;
+    temp = (Eaddr - STM_FLASH_BASE) % STM_PAGE_SIZE;
     if(temp > 0)
     {
         page_start_num = page_start_num+1;
     }
     
-    page_end_num = (Eaddr + Elen - STM_FLASH_BASE) / PAGE_SIZE;
-    temp = (Eaddr + Elen - STM_FLASH_BASE) % PAGE_SIZE;
+    page_end_num = (Eaddr + Elen - STM_FLASH_BASE) / STM_PAGE_SIZE;
+    temp = (Eaddr + Elen - STM_FLASH_BASE) % STM_PAGE_SIZE;
     if(temp > 0)
     {
         page_end_num = page_end_num+1;
@@ -96,7 +96,7 @@ uint32_t my_erase_pages(uint32_t Eaddr, uint16_t Elen)
     FLASH_EraseInitTypeDef My_Flash; //Flash擦除结构
     
     //写入的地址范围应该小于
-    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+FLASH_SIZE)))
+    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+STM_FLASH_SIZE)))
     {
         return 1;//非法地址
     }
@@ -127,7 +127,7 @@ uint8_t my_read_erase_write_to_flash(uint32_t Eaddr, uint8_t *Edat, uint16_t Ele
     uint32_t FlashDestination;
 	
     //写入的地址范围应该小于
-    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+FLASH_SIZE)))
+    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+STM_FLASH_SIZE)))
     {
         return 1;//非法地址
     }
@@ -164,7 +164,7 @@ uint8_t my_erase_write_to_flash(uint32_t Eaddr, uint8_t *Edat, uint16_t Elen)
     uint32_t FlashDestination;
 	
     //写入的地址范围应该小于
-    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+FLASH_SIZE)))
+    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+STM_FLASH_SIZE)))
     {
         return 1;//非法地址
     }
@@ -200,7 +200,7 @@ uint8_t my_write_to_flash(uint32_t Eaddr, uint8_t *Edat, uint16_t Elen)
     uint32_t FlashDestination;
 	
     //写入的地址范围应该小于
-    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+FLASH_SIZE)))
+    if( Eaddr < STM_FLASH_BASE || (Eaddr >= (STM_FLASH_BASE+STM_FLASH_SIZE)))
     {
         return 1;//非法地址
     }
@@ -249,7 +249,7 @@ void my_read_from_flash(uint32_t Eaddr, uint8_t *Edat, uint16_t Elen)
             MyIapMap, MyIapFlag 
 * 函数返回: 
 *****************************************************************************/
-uint8_t my_buffer[PAGE_SIZE];
+uint8_t my_buffer[STM_PAGE_SIZE];
 uint8_t iap_re_write_user_code(void)
 {
     uint32_t j;
@@ -262,8 +262,8 @@ uint8_t iap_re_write_user_code(void)
 
     My_Flash.TypeErase = FLASH_TYPEERASE_PAGES; //标明Flash执行页面只做擦除操作
     My_Flash.PageAddress = MyIapMap.UserAddr;   //声明要擦除的地址
-    My_Flash.NbPages = (MyIapFlag.FileSize / PAGE_SIZE);   //说明要擦除的页数
-    if(MyIapFlag.FileSize % PAGE_SIZE > 0)
+    My_Flash.NbPages = (MyIapFlag.FileSize / STM_PAGE_SIZE);   //说明要擦除的页数
+    if(MyIapFlag.FileSize % STM_PAGE_SIZE > 0)
     {
         My_Flash.NbPages = My_Flash.NbPages+1;
     }
@@ -273,10 +273,10 @@ uint8_t iap_re_write_user_code(void)
     Flash_obj = MyIapMap.UserAddr;//目标地址
     for (j = 0; j<My_Flash.NbPages; j += 1)
 	{
-        my_read_from_flash(Flash_des, my_buffer, PAGE_SIZE);
-        my_write_to_flash(Flash_obj, my_buffer, PAGE_SIZE);
-		Flash_des += PAGE_SIZE;
-		Flash_obj += PAGE_SIZE;
+        my_read_from_flash(Flash_des, my_buffer, STM_PAGE_SIZE);
+        my_write_to_flash(Flash_obj, my_buffer, STM_PAGE_SIZE);
+		Flash_des += STM_PAGE_SIZE;
+		Flash_obj += STM_PAGE_SIZE;
 	}
 	HAL_FLASH_Lock(); //锁住Flash
     
